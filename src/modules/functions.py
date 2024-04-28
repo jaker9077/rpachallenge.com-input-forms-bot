@@ -1,17 +1,14 @@
-#from RPA.Browser.Selenium import Selenium
 # Selenium
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service as ChromeService
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 # Webdriver Manager
 from webdriver_manager.chrome import ChromeDriverManager
 # Other
 import os
-import time
 import pandas as pd
 
 
@@ -21,7 +18,7 @@ def establish_driver():
     # Set the WDM_LOCAL environment variable to '1' - This allows the driver to be installed locally inside the src -> .wdm folder instead of users .wdm folder on OS
     os.environ['WDM_LOCAL'] = '1'
 
-    # Check if chromedriver is already installed and is the proper version, if not install it
+    # Check if chromedriver is already installed and is the proper version to match current browser version, if not install it
     chrome_driver_path = ChromeDriverManager().install()
 
     # Specify the download directory
@@ -29,12 +26,13 @@ def establish_driver():
 
     # Add chrome driver options
     chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--log-level=3")  # Suppress all log messages except fatal ones
+    #chrome_options.add_argument("--headless") # Run the browser in headless mode
     
     chrome_options.add_experimental_option('prefs', {
         "download.default_directory": download_dir, # Change default directory for downloads
         "download.prompt_for_download": False, # To auto download the file
-        "download.directory_upgrade": True,
+        "download.directory_upgrade": True, # Chrome will use the new download directory system
         "plugins.always_open_pdf_externally": True # It will not show PDF directly in chrome
     })
     
@@ -52,8 +50,12 @@ def get_url(driver):
 # Download excel file
 def download_excel_file(driver):
 
+    # Specify the path to the excel file
     excel_file = os.path.join(os.getcwd(), 'dependencies', 'challenge.xlsx')
 
+    # *** REDUNDANT CODE - This code shows both ways | This would depend on client needs*** #
+    #   Example: If the file only changes every 6 months, then I would not remove it every time
+    
     # Delete the file if it already exists
     if os.path.exists(excel_file):
         os.remove(excel_file)
@@ -62,12 +64,15 @@ def download_excel_file(driver):
     if not os.path.exists(excel_file):
         download_url = "https://rpachallenge.com/assets/downloadFiles/challenge.xlsx"
         driver.get(download_url)
+    
+    return excel_file
 
 
 # Submit the form
-def submit_form(driver):
+def submit_form(driver, excel_file):
 
-    excel_file = os.path.join(os.getcwd(), 'dependencies', 'challenge.xlsx')
+    # Specify the path to the excel file
+    #excel_file = os.path.join(os.getcwd(), 'dependencies', 'challenge.xlsx')
 
     # Click the start button
     wait = WebDriverWait(driver, 10)
@@ -76,16 +81,16 @@ def submit_form(driver):
 
     # Read the excel file
     df = pd.read_excel(excel_file)
+    # Remove leading and trailing whitespaces from column names
     df.columns = df.columns.str.strip()
 
+    submission_number = 1
+
     for row, column in df.iterrows():
-        print(f"Start of for loop - iteration {row}")
-        # Get the form every time after submitting the form
-        #form = driver.find_element(By.XPATH, "//form[1]") # Locate the form element on the web page
-        #form = driver.find_element(By.XPATH, "//form") # Locate the form element on the web page
+        # Reselect the form every time after submitting the form
         wait = WebDriverWait(driver, 10)
         form = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'form'))) # Locate the form element on the web page
-        submit_button = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'input.btn.uiColorButton')))
+        submit_button = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'input.btn.uiColorButton'))) # Locate the submit button on the form
         
         # Locate the input fields on the form
         first_name = form.find_element(By.XPATH, "//label[text()='First Name']/following-sibling::input")
@@ -107,6 +112,7 @@ def submit_form(driver):
 
         # Submit the form
         submit_button.click()
-        print(f"Form #{row} submitted")
+        #print(f"Form #{submission_number} submitted")
+        submission_number += 1
     
-    return "Program Done"
+    

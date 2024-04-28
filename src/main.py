@@ -6,12 +6,13 @@ from modules.functions import establish_driver, get_url, download_excel_file, su
 
 @task
 def main():
+    # Establish driver
     driver = establish_driver()
+    # Get URL
     get_url(driver)
-    download_excel_file(driver)
-    results = submit_form(driver)
-    print(results)
-    time.sleep(10)
+    excel_file = download_excel_file(driver)
+    submit_form(driver, excel_file)
+    #time.sleep(5) # Sleep for 5 seconds to see the results
 
 if __name__ == "__main__":
     main()
