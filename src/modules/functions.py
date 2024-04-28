@@ -22,7 +22,7 @@ def establish_driver():
     chrome_driver_path = ChromeDriverManager().install()
 
     # Specify the download directory
-    download_dir = os.path.join(os.getcwd(), 'dependencies')
+    download_dir = os.path.join(os.getcwd(), 'output')
 
     # Add chrome driver options
     chrome_options = webdriver.ChromeOptions()
@@ -38,7 +38,7 @@ def establish_driver():
     
     # Create driver object
     driver = webdriver.Chrome(service=ChromeService(chrome_driver_path), options=chrome_options)
-    return driver
+    return driver, download_dir
 
 
 # Get the URL
@@ -48,11 +48,11 @@ def get_url(driver):
 
 
 # Download excel file
-def download_excel_file(driver):
+def download_excel_file(driver, download_dir):
 
     # Specify the path to the excel file
-    excel_file = os.path.join(os.getcwd(), 'dependencies', 'challenge.xlsx')
-
+    excel_file = os.path.join(download_dir, 'challenge.xlsx')
+    
     # *** REDUNDANT CODE - This code shows both ways | This would depend on client needs*** #
     #   Example: If the file only changes every 6 months, then I would not remove it every time
     
@@ -70,9 +70,6 @@ def download_excel_file(driver):
 
 # Submit the form
 def submit_form(driver, excel_file):
-
-    # Specify the path to the excel file
-    #excel_file = os.path.join(os.getcwd(), 'dependencies', 'challenge.xlsx')
 
     # Click the start button
     wait = WebDriverWait(driver, 10)
