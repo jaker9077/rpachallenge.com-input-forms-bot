@@ -11,7 +11,9 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 # Other
 import os
+import time
 import pandas as pd
+
 
 # Establish chrome driver
 def establish_driver():
@@ -22,10 +24,19 @@ def establish_driver():
     # Check if chromedriver is already installed and is the proper version, if not install it
     chrome_driver_path = ChromeDriverManager().install()
 
+    # Specify the download directory
+    download_dir = os.path.join(os.getcwd(), 'dependencies')
+
     # Add chrome driver options
     chrome_options = webdriver.ChromeOptions()
     #chrome_options.add_argument("--headless")
-
+    chrome_options.add_experimental_option('prefs', {
+        "download.default_directory": download_dir, # Change default directory for downloads
+        "download.prompt_for_download": False, # To auto download the file
+        "download.directory_upgrade": True,
+        "plugins.always_open_pdf_externally": True # It will not show PDF directly in chrome
+    })
+    
     # Create driver object
     driver = webdriver.Chrome(service=ChromeService(chrome_driver_path), options=chrome_options)
     return driver
@@ -37,43 +48,33 @@ def get_url(driver):
     driver.get(url) # Send GET request to the URL
 
 
-def download_file(driver):
-    # Specify the path to the excel file
-    excel_file = os.path.join(os.path.dirname(os.getcwd()), 'output', 'challenge.xlsx')
+# Download excel file
+def download_excel_file(driver):
 
-    # Attempt to read the excel file
-    try:
-        df = pd.read_excel(excel_file)
-    except FileNotFoundError:
-        # wait = WebDriverWait(driver, 10)
+    excel_file = os.path.join(os.getcwd(), 'dependencies', 'challenge.xlsx')
 
-        # # Locate the link with text containing 'DOWNLOAD EXCEL'
-        # download_link = wait.until(EC.presence_of_element_located((By.XPATH, "//a[contains(normalize-space(text()), 'Download Excel')]")))
+    # Delete the file if it already exists
+    if os.path.exists(excel_file):
+        os.remove(excel_file)
 
-        # # Click the link to download the file
-        # download_link.click()
-
-        download_url = ("https://rpachallenge.com/assets/downloadFiles/challenge.xlsx")
+    # Only download the file if it doesn't exist
+    if not os.path.exists(excel_file):
+        download_url = "https://rpachallenge.com/assets/downloadFiles/challenge.xlsx"
         driver.get(download_url)
 
-    df = pd.read_excel(excel_file)
-    return df
-    
-        
 
-    
+# Submit the form
+def submit_form(driver):
 
-
-# Get the form
-def submit_form(driver,  df):
-
-
+    excel_file = os.path.join(os.getcwd(), 'dependencies', 'challenge.xlsx')
 
     # Click the start button
-    wait = WebDriverWait(driver, 10)
-    start_button = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "//button[text()='Start']")))
-    start_button.click()
+    # wait = WebDriverWait(driver, 10)
+    # start_button = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "//button[text()='Start']")))
+    # start_button.click()
 
+    # Read the excel file
+    df = pd.read_excel(excel_file)
     df.columns = df.columns.str.strip()
 
     for row, column in df.iterrows():
