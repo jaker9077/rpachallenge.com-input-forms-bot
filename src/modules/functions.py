@@ -29,7 +29,8 @@ def establish_driver():
 
     # Add chrome driver options
     chrome_options = webdriver.ChromeOptions()
-    #chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--headless")
+    
     chrome_options.add_experimental_option('prefs', {
         "download.default_directory": download_dir, # Change default directory for downloads
         "download.prompt_for_download": False, # To auto download the file
@@ -69,9 +70,9 @@ def submit_form(driver):
     excel_file = os.path.join(os.getcwd(), 'dependencies', 'challenge.xlsx')
 
     # Click the start button
-    # wait = WebDriverWait(driver, 10)
-    # start_button = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "//button[text()='Start']")))
-    # start_button.click()
+    wait = WebDriverWait(driver, 10)
+    start_button = wait.until(EC.presence_of_element_located((By.XPATH, "//button")))
+    start_button.click()
 
     # Read the excel file
     df = pd.read_excel(excel_file)
@@ -107,3 +108,5 @@ def submit_form(driver):
         # Submit the form
         submit_button.click()
         print(f"Form #{row} submitted")
+    
+    return "Program Done"
