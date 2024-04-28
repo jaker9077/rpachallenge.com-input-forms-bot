@@ -27,7 +27,7 @@ def establish_driver():
     # Add chrome driver options
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument("--log-level=3")  # Suppress all log messages except fatal ones
-    #chrome_options.add_argument("--headless") # Run the browser in headless mode
+    chrome_options.add_argument("--headless") # Run the browser in headless mode
     
     chrome_options.add_experimental_option('prefs', {
         "download.default_directory": download_dir, # Change default directory for downloads
